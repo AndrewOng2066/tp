@@ -25,22 +25,22 @@ public class SampleDataUtil {
         return new Person[] {
             new Person(new Name("Alex Yeoh"), new Phone("87438807"), new Email("alexyeoh@example.com"),
                 new StudentId("A1111111D"),
-                getAttendanceSet("02-02-2024")),
+                getAttendanceSet(new Attendance(new AttendanceStatus("02-02-2024", "1")))),
             new Person(new Name("Bernice Yu"), new Phone("99272758"), new Email("berniceyu@example.com"),
                 new StudentId("A2222222D"),
-                getAttendanceSet("02-02-2024")),
+                getAttendanceSet(new Attendance(new AttendanceStatus("02-02-2024", "1")))),
             new Person(new Name("Charlotte Oliveiro"), new Phone("93210283"), new Email("charlotte@example.com"),
                 new StudentId("A3333333D"),
-                getAttendanceSet("02-02-2024")),
+                getAttendanceSet(new Attendance(new AttendanceStatus("02-02-2024", "1")))),
             new Person(new Name("David Li"), new Phone("91031282"), new Email("lidavid@example.com"),
                 new StudentId("A4444444D"),
-                getAttendanceSet("02-02-2024")),
+                getAttendanceSet(new Attendance(new AttendanceStatus("02-02-2024", "1")))),
             new Person(new Name("Irfan Ibrahim"), new Phone("92492021"), new Email("irfan@example.com"),
                 new StudentId("A5555555D"),
-                getAttendanceSet("02-02-2024")),
+                getAttendanceSet(new Attendance(new AttendanceStatus("02-02-2024", "1")))),
             new Person(new Name("Roy Balakrishnan"), new Phone("92624417"), new Email("royb@example.com"),
                 new StudentId("A6666666D"),
-                getAttendanceSet("02-02-2024"))
+                getAttendanceSet(new Attendance(new AttendanceStatus("02-02-2024", "1"))))
         };
     }
 
@@ -55,11 +55,11 @@ public class SampleDataUtil {
     /**
      * Returns a tag set containing the list of strings given.
      */
-    public static Set<Attendance> getAttendanceSet(String... strings) {
+    public static Set<Attendance> getAttendanceSet(Attendance... strings) {
 
         Set<Attendance> set = new HashSet<>();
-        for (String i : strings) {
-            set.add(new Attendance(new AttendanceStatus(i, "1")));
+        for (Attendance i : strings) {
+            set.add(new Attendance(new AttendanceStatus(i.attendanceName.getDate(), "1")));
         }
         return set;
     }
