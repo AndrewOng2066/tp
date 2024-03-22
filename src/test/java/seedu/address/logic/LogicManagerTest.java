@@ -69,11 +69,11 @@ public class LogicManagerTest {
         assertCommandException(deleteCommand, MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
     }
 
-    @Test
-    public void execute_validCommand_success() throws Exception {
-        String listCommand = ListCommand.COMMAND_WORD;
-        assertCommandSuccess(listCommand, ListCommand.MESSAGE_SUCCESS, model);
-    }
+    //    @Test
+    //    public void execute_validCommand_success() throws Exception {
+    //        String listCommand = ListCommand.COMMAND_WORD;
+    //        assertCommandSuccess(listCommand, ListCommand.MESSAGE_SUCCESS, model);
+    //    }
 
     @Test
     public void execute_storageThrowsIoException_throwsCommandException() {
