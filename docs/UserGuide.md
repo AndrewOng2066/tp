@@ -102,7 +102,7 @@ Edits an existing person in the studentId book.
 
 Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`
 
-* Edits the person at the specified `INDEX`. The index refers to the index number shown in the displayed person list. The index **must be a positive integer** 1, 2, 3, …​
+* Edits the person at the specified `INDEX`. The index refers to the index number shown in the displayed person list. The index **must be a positive integer** 1, 2, 3, …​, up to the size of the class.
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
 * When editing attendances, the existing attendances of the person will be removed i.e adding of attendances is not cumulative.
@@ -112,6 +112,48 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]…​`
 Examples:
 *  `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email studentId of the 1st person to be `91234567` and `johndoe@example.com` respectively.
 *  `edit 2 n/Betsy Crower t/` Edits the name of the 2nd person to be `Betsy Crower` and clears all existing attendances.
+
+### Adding an attendance record : `adda`
+
+Add an attendance record to all exiting person in the studentId book.
+
+Format: `adda [ar/DATE]`
+
+* The format for `DATE` is `dd-MM-yyyy`.
+* The entered date, `DATE`, must not exist in any of the person's existing list of attendance dates.
+* The default value for status is '1' which represents 'Present'.
+
+Examples:
+*  `adda ar/01-01-2024` All the existing person will have a newly added attendance with date `01-01-2024` and a default status `1`.
+
+### Editing an attendance for any number of person : `edita`
+
+Edits the exiting attendance record in the person's list of attendance in the studentId book. Any number of persons can be edited at one go.
+
+Format: `edit INDEX1, INDEX2, …​ [ar/DATE] [st/STATUS]`
+
+* The format for `DATE` is `dd-MM-yyyy`.
+* Edits the person at the specified `INDEX(S)`. The index refers to the index number shown in the displayed person list. The index **must be a positive integer** 1, 2, 3, …​, up to the size of the class.
+* At least one index is provided. 
+* All the selected person will have their status of the selected attendance date, `DATE`, to be reflected to `STATUS`
+* The entered date, `DATE`, must exist in the person's existing list of attendance dates.
+
+Examples:
+*  `edita 1 ar/01-01-2024 st/2` Edits the attendance status of the 1st person for `01-01-2024` to `2`, indicating absence with a valid reason.
+*  `edita 2, 3 ar/01-01-2024 st/0` Edits the attendance status of the 2nd and 3rd person for `01-01-2024` to `0`, indicating absence.
+
+### Deleting an attendance record : `dela`
+
+Deletes the specified attendance date from all the person's list of attendance records in studentId book.
+
+Format: `dela [ar/DATE]`
+
+* The format for `DATE` is `dd-MM-yyyy`.
+* The entered date, `DATE`, must exist in the person's existing list of attendance dates.
+* Deletes the specified date, `DATE` from all the person's list of attendance records.
+
+Examples:
+* `dela ar/01-01-2024` Deletes the attendance record, `01-01-2024`, from all person's existing list of attendance records.
 
 ### Locating persons by name: `find`
 
