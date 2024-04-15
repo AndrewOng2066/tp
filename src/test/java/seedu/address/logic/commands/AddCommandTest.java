@@ -4,24 +4,36 @@ import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static seedu.address.testutil.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
 
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
+import seedu.address.logic.Messages;
+import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.ReadOnlyClassBook;
 import seedu.address.model.ReadOnlyUserPrefs;
+import seedu.address.model.person.AttendanceStatus;
 import seedu.address.model.person.Classes;
+import seedu.address.model.person.Description;
+import seedu.address.model.person.Email;
+import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.Phone;
+import seedu.address.model.person.StudentId;
+import seedu.address.model.tag.Attendance;
 import seedu.address.testutil.PersonBuilder;
 
 public class AddCommandTest {
@@ -30,6 +42,76 @@ public class AddCommandTest {
     public void constructor_nullPerson_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> new AddCommand(null));
     }
+
+    @Test
+    public void execute_personAcceptedByModel_addSuccessful() throws Exception {
+        ModelStubAcceptingPersonAdded modelStub = new ModelStubAcceptingPersonAdded();
+        Person validPerson = new PersonBuilder().build();
+
+        CommandResult commandResult = new AddCommand(validPerson).execute(modelStub);
+
+        assertEquals(String.format(AddCommand.MESSAGE_SUCCESS, Messages.format(validPerson)),
+                commandResult.getFeedbackToUser());
+        assertEquals(Arrays.asList(validPerson), modelStub.personsAdded);
+    }
+
+    @Test
+    public void execute_duplicatePhone_throwsCommandException() throws Exception {
+        ModelStubWithPersonWithSamePhone modelStub = new ModelStubWithPersonWithSamePhone();
+        Person validPerson1 = new Person(new Name("Andrew"), new Phone("94351253"), new Email("andrew@gmail.com"), new StudentId("A1111111D"), new HashSet<Attendance>(), new Description(""));
+        Person validPerson2 = new Person(new Name("John"), new Phone("94351253"), new Email("john@gmail.com"), new StudentId("A2222222D"), new HashSet<Attendance>(), new Description(""));
+
+        new AddCommand(validPerson1).execute(modelStub);
+
+        AddCommand addCommand = new AddCommand(validPerson2);
+
+        assertThrows(CommandException.class, () -> addCommand.execute(modelStub), AddCommand.MESSAGE_DUPLICATE_PHONE);
+    }
+
+    @Test
+    public void execute_duplicateEmail_throwsCommandException() throws Exception {
+        ModelStubWithPersonWithSamePhone modelStub = new ModelStubWithPersonWithSamePhone();
+        Person validPerson1 = new Person(new Name("Andrew"), new Phone("94351253"), new Email("andrew@gmail.com"), new StudentId("A1111111D"), new HashSet<Attendance>(), new Description(""));
+        Person validPerson2 = new Person(new Name("John"), new Phone("94351252"), new Email("andrew@gmail.com"), new StudentId("A2222222D"), new HashSet<Attendance>(), new Description(""));
+
+        new AddCommand(validPerson1).execute(modelStub);
+
+        AddCommand addCommand = new AddCommand(validPerson2);
+
+        assertThrows(CommandException.class, () -> addCommand.execute(modelStub), AddCommand.MESSAGE_DUPLICATE_EMAIL);
+    }
+
+    @Test
+    public void execute_duplicateStudentId_throwsCommandException() throws Exception {
+        ModelStubWithPersonWithSamePhone modelStub = new ModelStubWithPersonWithSamePhone();
+        Person validPerson1 = new Person(new Name("Andrew"), new Phone("94351253"), new Email("andrew@gmail.com"), new StudentId("A1111111D"), new HashSet<Attendance>(), new Description(""));
+        Person validPerson2 = new Person(new Name("John"), new Phone("94351252"), new Email("john@gmail.com"), new StudentId("A1111111D"), new HashSet<Attendance>(), new Description(""));
+
+        new AddCommand(validPerson1).execute(modelStub);
+
+        AddCommand addCommand = new AddCommand(validPerson2);
+
+        assertThrows(CommandException.class, () -> addCommand.execute(modelStub), AddCommand.MESSAGE_DUPLICATE_EMAIL);
+    }
+
+    @Test
+    public void execute_personWithAttendanceAcceptedByModel_addSuccessful() throws Exception {
+        ModelStubAcceptingPersonAdded modelStub = new ModelStubAcceptingPersonAdded();
+        Set<Attendance> attendances = new HashSet<>();
+        attendances.add(new Attendance(new AttendanceStatus("01-01-2024", "1")));
+        Person validPerson1 = new Person(new Name("Andrew"), new Phone("94351253"), new Email("andrew@gmail.com"), new StudentId("A1111111D"), attendances, new Description(""));
+        Person validPerson2 = new Person(new Name("John"), new Phone("94351252"), new Email("john@gmail.com"), new StudentId("A2222222D"), new HashSet<Attendance>(), new Description(""));
+
+        new AddCommand(validPerson1).execute(modelStub);
+
+        CommandResult commandResult = new AddCommand(validPerson2).execute(modelStub);
+
+        assertEquals(String.format(AddCommand.MESSAGE_SUCCESS, Messages.format(validPerson2)),
+                commandResult.getFeedbackToUser());
+    }
+
+
+
 
     @Test
     public void equals() {
@@ -61,6 +143,7 @@ public class AddCommandTest {
         String expected = AddCommand.class.getCanonicalName() + "{toAdd=" + ALICE + "}";
         assertEquals(expected, addCommand.toString());
     }
+
 
     /**
      * A default model stub that have all of the methods failing.
@@ -219,9 +302,6 @@ public class AddCommandTest {
         }
     }
 
-    /**
-     * A Model stub that always accept the person being added.
-     */
     private class ModelStubAcceptingPersonAdded extends ModelStub {
         final ArrayList<Person> personsAdded = new ArrayList<>();
 
@@ -239,8 +319,63 @@ public class AddCommandTest {
 
         @Override
         public ReadOnlyAddressBook getAddressBook() {
-            return new AddressBook();
+            AddressBook addressBook = new AddressBook();
+            for (Person person : personsAdded) {
+                addressBook.addPerson(person);
+            }
+            return addressBook;
+        }
+
+        @Override
+        public ObservableList<Person> getFilteredPersonList() {
+            return javafx.collections.FXCollections.observableArrayList(personsAdded);
+        }
+
+        @Override
+        public void updateFilteredPersonList(Predicate<Person> predicate) {
+            super.updateFilteredPersonList(predicate);
+            // This may be no-op if you do not need to simulate filtered list behavior
         }
     }
+
+    private class ModelStubWithPersonWithSamePhone extends ModelStub {
+
+        final ArrayList<Person> personsAdded = new ArrayList<>();
+
+        @Override
+        public boolean hasPerson(Person person) {
+            requireNonNull(person);
+            return personsAdded.stream().anyMatch(person::isSamePerson);
+        }
+
+        @Override
+        public void addPerson(Person person) {
+            requireNonNull(person);
+            personsAdded.add(person);
+        }
+
+        @Override
+        public ReadOnlyAddressBook getAddressBook() {
+            AddressBook addressBook = new AddressBook();
+            for (Person person : personsAdded) {
+                addressBook.addPerson(person);
+            }
+            return addressBook;
+        }
+
+        @Override
+        public ObservableList<Person> getFilteredPersonList() {
+            return javafx.collections.FXCollections.observableArrayList(personsAdded);
+        }
+
+        @Override
+        public void updateFilteredPersonList(Predicate<Person> predicate) {
+            super.updateFilteredPersonList(predicate);
+            // This may be no-op if you do not need to simulate filtered list behavior
+        }
+
+
+    }
+
 
 }
